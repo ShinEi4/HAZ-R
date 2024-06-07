@@ -1,0 +1,4 @@
+statue = 0 si nouveau commande
+statue = 1 si commande pret
+statue = 2 si commande livre
+statue = 3 si commande paye
