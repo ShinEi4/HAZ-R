@@ -48,10 +48,52 @@ public class Admin {
         this.nom = nom;
         this.motdepasse =HashUtil.hashString(m);
     }
+
     public Admin(int id, String mdp) { //eviter hash
         this.id = id;
         this.motdepasse = mdp;
     }
+
+    public static boolean checkLogin(String pseudo, String motdepasse) {
+            String mdp=HashUtil.hashString(motdepasse);
+            if (pseudo == null || pseudo.isEmpty() || motdepasse == null || motdepasse.isEmpty()) {
+                return false;
+            }
+    
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            ResultSet resultSet = null;
+    
+            try {
+                conn = Connexion.connectePostgres();
+                String query="SELECT * FROM admin WHERE pseudo = ?";
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, pseudo);
+                resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    query = "SELECT * FROM admin WHERE pseudo = ? AND motdepasse = ?";
+                    preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setString(1, pseudo);
+                    preparedStatement.setString(2, mdp);
+                    ResultSet resultSet2 = preparedStatement.executeQuery();
+                    if (resultSet2.next()) {
+                        return true;
+                    }
+                    else{
+                        throw new SQLException("Mot de passe incorrect");
+                    }
+                }
+                else
+                {
+                    throw new SQLException("Compte inexistant");
+                }
+                
+            } catch (ClassNotFoundException | SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
 
     // mila fonction manao hash
 
@@ -173,6 +215,7 @@ public class Admin {
         }
         return ls;
     }
+    
     
     //insert first commande
     //by default date should be now
