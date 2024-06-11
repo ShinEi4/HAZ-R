@@ -92,6 +92,13 @@ public class Admin {
             } catch (ClassNotFoundException | SQLException e) {
                 e.printStackTrace();
             }
+            finally 
+            {
+                if(resultSet != null ) resultSet.close();
+                if(resultSet2 != null ) resultSet2.close();
+                if(preparedStatement != null ) preparedStatement.close();
+                conn.close();
+            }
             return false;
         }
 
@@ -115,6 +122,11 @@ public class Admin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        finally
+        {
+            if(pstmt != null ) pstmt.close();
+            conn.close();
+        }
     }
     
     public void update(int id)
@@ -137,6 +149,11 @@ public class Admin {
             int v=pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        finally
+        {
+            pstmt.close();
+            conn.close();
         }
     }
     
