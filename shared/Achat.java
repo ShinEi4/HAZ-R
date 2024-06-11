@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 
+import objet.Equipement;
 import personne.Admin;
 import util.Connexion;
 
@@ -142,7 +143,7 @@ public class Achat {
                 int id2=rs.getInt("idAchatEquipement");
                 int id_equip = rs.getInt("idEquipement");
                 Equipement equip =new Equipement();
-                equip.getById(id_equip);
+                equip=Equipement.getById(id_equip);
                 java.sql.Date dateSql=rs.getDate("date");
                 LocalDate date=dateSql.toLocalDate();
                 double quantite =rs.getDouble("quantite");
@@ -184,7 +185,7 @@ public class Achat {
                 int id=rs.getInt("idAchatEquipement");
                 int id_equip = rs.getInt("idEquipement");
                 Equipement equip = new Equipement();
-                equip.getById(id_equip);
+                equip=Equipement.getById(id_equip);
                 java.sql.Date dateSql=rs.getDate("date");
                 LocalDate date=dateSql.toLocalDate();
                 double quantite =rs.getDouble("quantite");
@@ -234,7 +235,7 @@ public class Achat {
                 int id=rs.getInt("idAchatEquipement");
                 int id_equip = rs.getInt("idEquipement");
                 Equipement equip = new Equipement();
-                equip.getById(id_equip);
+                equip=Equipement.getById(id_equip);
                 java.sql.Date dateSql=rs.getDate("date");
                 LocalDate date=dateSql.toLocalDate();
                 double quantite =rs.getDouble("quantite");
@@ -255,7 +256,73 @@ public class Achat {
         }
         return ls;       
     }
+    public static Vector<Achat> getAllByDates(String debutStr, String finStr) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        Vector<Achat> ls = new Vector<>();
 
+        LocalDate debutDate = null;
+        LocalDate finDate = null;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (debutStr != null && !debutStr.isEmpty()) {
+            debutDate = LocalDate.parse(debutStr, formatter);
+        }
+        if (finStr != null && !finStr.isEmpty()) {
+            finDate = LocalDate.parse(finStr, formatter);
+        }
+
+        try {
+            conn = Connexion.connectePostgres();
+            StringBuilder query = new StringBuilder("SELECT * FROM AchatEquipement WHERE 1=1");
+
+            if (debutDate != null) {
+                query.append(" AND date >= ?");
+            }
+            if (finDate != null) {
+                query.append(" AND date <= ?");
+            }
+
+            pstmt = conn.prepareStatement(query.toString());
+
+            int parameterIndex = 1;
+            if (debutDate != null) {
+                pstmt.setDate(parameterIndex++, Date.valueOf(debutDate));
+            }
+            if (finDate != null) {
+                pstmt.setDate(parameterIndex++, Date.valueOf(finDate));
+            }
+
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                int idu = rs.getInt("idadmin");
+                Admin user = Admin.getById(idu);
+                int id = rs.getInt("idAchatEquipement");
+                int id_equip = rs.getInt("idEquipement");
+                Equipement equip = new Equipement();
+                equip=Equipement.getById(id_equip);
+                java.sql.Date dateSql = rs.getDate("date");
+                LocalDate date = dateSql.toLocalDate();
+                double quantite = rs.getDouble("quantite");
+                Achat a = new Achat(id, user, equip, quantite, date);
+                ls.add(a);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return ls;
+    }
     public static double getPrixTotal(Vector<Achat> ls) //afaka alaina direct avy any amin'ny base
     {
         double s=0;

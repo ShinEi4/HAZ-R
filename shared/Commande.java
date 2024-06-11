@@ -500,7 +500,6 @@ public class Commande {
                 }
             }
         }
-
         return commandes;
     }
     
