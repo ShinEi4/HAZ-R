@@ -426,6 +426,83 @@ public class Commande {
         return commandes;
     }
 
+    //rehefa null ilay statut avy any am post dia atao -1 rehefa miantso an'ity fonction ity
+    public static ArrayList<Commande> getAllCommandsByCriteria(int statut, String dateDebut, String dateFin) throws Exception {
+        ArrayList<Commande> commandes = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM commande WHERE 1=1");
+
+        if (statut != -1) {
+            sql.append(" AND statue=?");
+        }
+        if (dateDebut != null) {
+            sql.append(" AND date>=?");
+        }
+        if (dateFin != null) {
+            sql.append(" AND date<=?");
+        }
+
+        Connection conn = null;
+        PreparedStatement prstm = null;
+        ResultSet resultSet = null;
+
+        try {
+            conn = Connexion.connectePostgres();
+            prstm = conn.prepareStatement(sql.toString());
+
+            int parameterIndex = 1;
+            if (statut != -1) {
+                prstm.setInt(parameterIndex++, statut);
+            }
+            if (dateDebut != null) {
+                Date sqlDateDebut = Date.valueOf(dateDebut);
+                prstm.setDate(parameterIndex++, sqlDateDebut);
+            }
+            if (dateFin != null) {
+                Date sqlDateFin = Date.valueOf(dateFin);
+                prstm.setDate(parameterIndex++, sqlDateFin);
+            }
+
+            resultSet = prstm.executeQuery();
+
+            while (resultSet.next()) {
+                int idCommande = resultSet.getInt("idCommande");
+                int idUser = resultSet.getInt("idUser");
+                double poids = resultSet.getDouble("poids");
+                Date date = resultSet.getDate("date");
+                int type = resultSet.getInt("type");
+                int idRegion = resultSet.getInt("idRegion");
+                int statue = resultSet.getInt("statue");
+                Date dateFarany = resultSet.getDate("dateFin");
+                commandes.add(new Commande(idCommande, idUser, poids, date, type, idRegion, statue, dateFarany));
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (prstm != null) {
+                try {
+                    prstm.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return commandes;
+    }
     
 
 }
